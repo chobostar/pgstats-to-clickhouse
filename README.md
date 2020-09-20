@@ -12,6 +12,11 @@ Features:
 - counts delta (counter -> gauge)
 - skips not changing metrics (not for gauge metrics like n_live_tup, n_dead_tup, relation_size)
 
+#### Example Dashboards
+![pg_stat_statements](examples/img/2e640f2055.png)
+
+![pg_stat_tables](examples/img/62add3afdb.png)
+
 #### Requirements
 
 tested on
