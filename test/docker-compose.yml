@@ -1,0 +1,15 @@
+version: "2"
+services:
+  clickhouse:
+    image: yandex/clickhouse-server:20.1
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+  postgres:
+    image: postgres:11
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: "postgres"
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+    command: postgres -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all -c max_connections=200
