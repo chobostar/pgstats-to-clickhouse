@@ -1,0 +1,1229 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "iteration": 1648025173087,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": false,
+      "tags": [
+        "pgstats"
+      ],
+      "targetBlank": false,
+      "title": "dashboards",
+      "type": "dashboards",
+      "url": ""
+    }
+  ],
+  "panels": [
+    {
+      "collapsed": true,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 12,
+      "panels": [
+        {
+          "columns": [],
+          "datasource": null,
+          "description": "top $limit по сумме $column за заданный период времени\ntotal_time - общее время выполнения (cpu_time + io_time)\ncalls - количество выполнений\navg_latency - total_time / calls\nbuffers_read - сколько данных в сумме поднял запрос из OS (page cache + disc)",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {}
+            },
+            "overrides": []
+          },
+          "fontSize": "100%",
+          "gridPos": {
+            "h": 27,
+            "w": 24,
+            "x": 0,
+            "y": 1
+          },
+          "height": "1000px",
+          "id": 4,
+          "options": {
+            "showHeader": true
+          },
+          "pageSize": null,
+          "pluginVersion": "7.0.3",
+          "showHeader": true,
+          "sort": {
+            "col": 0,
+            "desc": true
+          },
+          "styles": [
+            {
+              "alias": "Query",
+              "align": "auto",
+              "decimals": 2,
+              "link": false,
+              "pattern": "query",
+              "preserveFormat": false,
+              "sanitize": false,
+              "type": "string",
+              "unit": "short"
+            },
+            {
+              "alias": "TotalTime",
+              "align": "auto",
+              "pattern": "total_time",
+              "type": "number",
+              "unit": "ms"
+            },
+            {
+              "alias": "AvgLatency",
+              "align": "auto",
+              "decimals": 2,
+              "mappingType": 1,
+              "pattern": "avg_latency",
+              "type": "number",
+              "unit": "ms"
+            },
+            {
+              "alias": "BuffersRead",
+              "align": "auto",
+              "decimals": 2,
+              "mappingType": 1,
+              "pattern": "buffers_read",
+              "type": "number",
+              "unit": "bytes"
+            },
+            {
+              "alias": "TotalCalls",
+              "align": "auto",
+              "decimals": 2,
+              "mappingType": 1,
+              "pattern": "calls",
+              "type": "number",
+              "unit": "short"
+            }
+          ],
+          "targets": [
+            {
+              "database": null,
+              "dateColDataType": "",
+              "dateLoading": false,
+              "dateTimeColDataType": "time",
+              "dateTimeType": "DATETIME",
+              "datetimeLoading": false,
+              "extrapolate": true,
+              "format": "table",
+              "formattedQuery": "SELECT\n    concat(username, '::', datname, '::', substring(query, 1, 3000)) AS query,\n    SUM(total_time) as total_time,\n    sum(calls) as calls,\n    total_time/calls as avg_latency,\n    8192* SUM(shared_blks_read + temp_blks_read + local_blks_read) AS buffers_read\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n    AND((created_at >= $from) AND(created_at <= $to))\n    AND created_hour >= toStartOfHour(toDateTime($from))\n    AND created_hour <= toStartOfHour(toDateTime($to))\n    AND hostname = '$hostname'\n    AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND query IN (\n    SELECT concat(username, '::', datname, '::', substring(query, 1, 3000))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n        AND((created_at >= $from) AND(created_at <= $to))\n        AND created_hour >= toStartOfHour(toDateTime($from))\n        AND created_hour <= toStartOfHour(toDateTime($to))\n        AND('$query' = '-' OR '$query' = '' OR positionCaseInsensitive(query, '$query') > 0)\n        AND hostname = '$hostname'\n        AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum($column) DESC\n    LIMIT $limit)\nGROUP BY query\n",
+              "intervalFactor": 1,
+              "query": "SELECT\n    concat(username, '::', datname, '::', substring(query, 1, 3000)) AS query,\n    SUM(total_time) as total_time,\n    sum(calls) as calls,\n    total_time/calls as avg_latency,\n    8192* SUM(shared_blks_read + temp_blks_read + local_blks_read) AS buffers_read\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n    AND((created_at >= $from) AND(created_at <= $to))\n    AND created_hour >= toStartOfHour(toDateTime($from))\n    AND created_hour <= toStartOfHour(toDateTime($to))\n    AND hostname = '$hostname'\n    AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND query IN (\n    SELECT concat(username, '::', datname, '::', substring(query, 1, 3000))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n        AND((created_at >= $from) AND(created_at <= $to))\n        AND created_hour >= toStartOfHour(toDateTime($from))\n        AND created_hour <= toStartOfHour(toDateTime($to))\n        AND('$query' = '-' OR '$query' = '' OR positionCaseInsensitive(query, '$query') > 0)\n        AND hostname = '$hostname'\n        AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum($column) DESC\n    LIMIT $limit)\nGROUP BY query\n",
+              "rawQuery": "SELECT\n    concat(username, '::', datname, '::', substring(query, 1, 3000)) AS query,\n    SUM(total_time) as total_time,\n    sum(calls) as calls,\n    total_time/calls as avg_latency,\n    8192* SUM(shared_blks_read + temp_blks_read + local_blks_read) AS buffers_read\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate(1648020665)) AND(created_date <= toDate(1648024265)))\n    AND((created_at >= 1648020665) AND(created_at <= 1648024265))\n    AND created_hour >= toStartOfHour(toDateTime(1648020665))\n    AND created_hour <= toStartOfHour(toDateTime(1648024265))\n    AND hostname = 'undefined'\n    AND ('yes' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND query IN (\n    SELECT concat(username, '::', datname, '::', substring(query, 1, 3000))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate(1648020665)) AND(created_date <= toDate(1648024265)))\n        AND((created_at >= 1648020665) AND(created_at <= 1648024265))\n        AND created_hour >= toStartOfHour(toDateTime(1648020665))\n        AND created_hour <= toStartOfHour(toDateTime(1648024265))\n        AND('' = '-' OR '' = '' OR positionCaseInsensitive(query, '') > 0)\n        AND hostname = 'undefined'\n        AND ('yes' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum(total_time) DESC\n    LIMIT 5)\nGROUP BY query",
+              "refId": "A",
+              "round": "0s",
+              "skip_comments": true,
+              "table": null
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Plan of top $limit query by $column",
+          "transform": "timeseries_to_columns",
+          "transformations": null,
+          "type": "table-old"
+        }
+      ],
+      "repeat": null,
+      "title": "Top $limit by $column Cumulative",
+      "type": "row"
+    },
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 13,
+      "panels": [],
+      "repeat": null,
+      "title": "detailed",
+      "type": "row"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "description": "https://www.postgresql.org/docs/10/pgstatstatements.html\nTotal time spent in the statement, in milliseconds\nper 30 seconds",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 4,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 2
+      },
+      "height": "200px",
+      "hiddenSeries": false,
+      "id": 5,
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": false,
+        "hideEmpty": true,
+        "hideZero": true,
+        "max": true,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": null,
+        "sort": "max",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null as zero",
+      "percentage": false,
+      "pluginVersion": "7.1.5",
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "database": null,
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg(total_time) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n    AND((created_at >= $from) AND(created_at <= $to))\n    AND created_hour >= toStartOfHour(toDateTime($from))\n    AND created_hour <= toStartOfHour(toDateTime($to))\n    AND hostname = '$hostname'\n    AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n        AND((created_at >= $from) AND(created_at <= $to))\n        AND created_hour >= toStartOfHour(toDateTime($from))\n        AND created_hour <= toStartOfHour(toDateTime($to))\n        AND('$query' = '-' OR '$query' = '' OR positionCaseInsensitive(query, '$query') > 0)\n        AND hostname = '$hostname'\n        AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum($column) DESC\n    LIMIT $limit)\nGROUP BY t, q\nORDER BY t ASC\n",
+          "intervalFactor": 1,
+          "query": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg(total_time) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n    AND((created_at >= $from) AND(created_at <= $to))\n    AND created_hour >= toStartOfHour(toDateTime($from))\n    AND created_hour <= toStartOfHour(toDateTime($to))\n    AND hostname = '$hostname'\n    AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n        AND((created_at >= $from) AND(created_at <= $to))\n        AND created_hour >= toStartOfHour(toDateTime($from))\n        AND created_hour <= toStartOfHour(toDateTime($to))\n        AND('$query' = '-' OR '$query' = '' OR positionCaseInsensitive(query, '$query') > 0)\n        AND hostname = '$hostname'\n        AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum($column) DESC\n    LIMIT $limit)\nGROUP BY t, q\nORDER BY t ASC\n",
+          "rawQuery": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg(total_time) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate(1648020680)) AND(created_date <= toDate(1648024280)))\n    AND((created_at >= 1648020680) AND(created_at <= 1648024280))\n    AND created_hour >= toStartOfHour(toDateTime(1648020680))\n    AND created_hour <= toStartOfHour(toDateTime(1648024280))\n    AND hostname = 'undefined'\n    AND ('yes' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate(1648020680)) AND(created_date <= toDate(1648024280)))\n        AND((created_at >= 1648020680) AND(created_at <= 1648024280))\n        AND created_hour >= toStartOfHour(toDateTime(1648020680))\n        AND created_hour <= toStartOfHour(toDateTime(1648024280))\n        AND('' = '-' OR '' = '' OR positionCaseInsensitive(query, '') > 0)\n        AND hostname = 'undefined'\n        AND ('yes' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum(total_time) DESC\n    LIMIT 5)\nGROUP BY t, q\nORDER BY t ASC",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": null
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "total_time",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transparent": true,
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "ms",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "ms",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "description": "https://www.postgresql.org/docs/10/pgstatstatements.html\nTotal time spent in the statement, in milliseconds\nper 30 seconds",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 4,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "height": "200px",
+      "hiddenSeries": false,
+      "id": 6,
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": false,
+        "hideEmpty": true,
+        "hideZero": true,
+        "max": true,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": null,
+        "sort": "max",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null as zero",
+      "percentage": false,
+      "pluginVersion": "7.1.5",
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "database": null,
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg(calls) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n    AND((created_at >= $from) AND(created_at <= $to))\n    AND created_hour >= toStartOfHour(toDateTime($from))\n    AND created_hour <= toStartOfHour(toDateTime($to))\n    AND hostname = '$hostname'\n    AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n        AND((created_at >= $from) AND(created_at <= $to))\n        AND created_hour >= toStartOfHour(toDateTime($from))\n        AND created_hour <= toStartOfHour(toDateTime($to))\n        AND('$query' = '-' OR '$query' = '' OR positionCaseInsensitive(query, '$query') > 0)\n        AND hostname = '$hostname'\n        AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum($column) DESC\n    LIMIT $limit)\nGROUP BY t, q\nORDER BY t ASC\n",
+          "intervalFactor": 1,
+          "query": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg(calls) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n    AND((created_at >= $from) AND(created_at <= $to))\n    AND created_hour >= toStartOfHour(toDateTime($from))\n    AND created_hour <= toStartOfHour(toDateTime($to))\n    AND hostname = '$hostname'\n    AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n        AND((created_at >= $from) AND(created_at <= $to))\n        AND created_hour >= toStartOfHour(toDateTime($from))\n        AND created_hour <= toStartOfHour(toDateTime($to))\n        AND('$query' = '-' OR '$query' = '' OR positionCaseInsensitive(query, '$query') > 0)\n        AND hostname = '$hostname'\n        AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum($column) DESC\n    LIMIT $limit)\nGROUP BY t, q\nORDER BY t ASC\n",
+          "rawQuery": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg(calls) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate(1648020715)) AND(created_date <= toDate(1648024315)))\n    AND((created_at >= 1648020715) AND(created_at <= 1648024315))\n    AND created_hour >= toStartOfHour(toDateTime(1648020715))\n    AND created_hour <= toStartOfHour(toDateTime(1648024315))\n    AND hostname = 'undefined'\n    AND ('yes' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate(1648020715)) AND(created_date <= toDate(1648024315)))\n        AND((created_at >= 1648020715) AND(created_at <= 1648024315))\n        AND created_hour >= toStartOfHour(toDateTime(1648020715))\n        AND created_hour <= toStartOfHour(toDateTime(1648024315))\n        AND('' = '-' OR '' = '' OR positionCaseInsensitive(query, '') > 0)\n        AND hostname = 'undefined'\n        AND ('yes' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum(total_time) DESC\n    LIMIT 5)\nGROUP BY t, q\nORDER BY t ASC",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": null
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "calls",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transparent": true,
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "clickhouse",
+      "description": "https://www.postgresql.org/docs/10/pgstatstatements.html\nTotal time spent in the statement, in milliseconds\nper 30 seconds\nне учитывает время планирования запроса",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 4,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "height": "200px",
+      "hiddenSeries": false,
+      "id": 7,
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": false,
+        "hideEmpty": true,
+        "hideZero": true,
+        "max": true,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": null,
+        "sort": "max",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null as zero",
+      "percentage": false,
+      "pluginVersion": "7.1.5",
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "database": null,
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg(total_time/calls) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n    AND((created_at >= $from) AND(created_at <= $to))\n    AND created_hour >= toStartOfHour(toDateTime($from))\n    AND created_hour <= toStartOfHour(toDateTime($to))\n    AND hostname = '$hostname'\n    AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n        AND((created_at >= $from) AND(created_at <= $to))\n        AND created_hour >= toStartOfHour(toDateTime($from))\n        AND created_hour <= toStartOfHour(toDateTime($to))\n        AND('$query' = '-' OR '$query' = '' OR positionCaseInsensitive(query, '$query') > 0)\n        AND hostname = '$hostname'\n        AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum($column) DESC\n    LIMIT $limit)\nGROUP BY t, q\nORDER BY t ASC\n",
+          "intervalFactor": 1,
+          "query": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg(total_time/calls) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n    AND((created_at >= $from) AND(created_at <= $to))\n    AND created_hour >= toStartOfHour(toDateTime($from))\n    AND created_hour <= toStartOfHour(toDateTime($to))\n    AND hostname = '$hostname'\n    AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n        AND((created_at >= $from) AND(created_at <= $to))\n        AND created_hour >= toStartOfHour(toDateTime($from))\n        AND created_hour <= toStartOfHour(toDateTime($to))\n        AND('$query' = '-' OR '$query' = '' OR positionCaseInsensitive(query, '$query') > 0)\n        AND hostname = '$hostname'\n        AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum($column) DESC\n    LIMIT $limit)\nGROUP BY t, q\nORDER BY t ASC\n",
+          "rawQuery": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg(total_time/calls) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate(1648020725)) AND(created_date <= toDate(1648024325)))\n    AND((created_at >= 1648020725) AND(created_at <= 1648024325))\n    AND created_hour >= toStartOfHour(toDateTime(1648020725))\n    AND created_hour <= toStartOfHour(toDateTime(1648024325))\n    AND hostname = 'undefined'\n    AND ('yes' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate(1648020725)) AND(created_date <= toDate(1648024325)))\n        AND((created_at >= 1648020725) AND(created_at <= 1648024325))\n        AND created_hour >= toStartOfHour(toDateTime(1648020725))\n        AND created_hour <= toStartOfHour(toDateTime(1648024325))\n        AND('' = '-' OR '' = '' OR positionCaseInsensitive(query, '') > 0)\n        AND hostname = 'undefined'\n        AND ('yes' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum(total_time) DESC\n    LIMIT 5)\nGROUP BY t, q\nORDER BY t ASC",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": null
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "latency",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transparent": true,
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "ms",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "ms",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "description": "https://www.postgresql.org/docs/10/pgstatstatements.html\nTotal time spent in the statement, in milliseconds\nper 30 seconds",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
+      "height": "200px",
+      "hiddenSeries": false,
+      "id": 8,
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": false,
+        "hideEmpty": true,
+        "hideZero": true,
+        "max": false,
+        "min": true,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": null,
+        "sort": "min",
+        "sortDesc": false,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null as zero",
+      "percentage": false,
+      "pluginVersion": "7.1.5",
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "database": null,
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg(shared_blks_hit / (shared_blks_hit + shared_blks_read)) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n    AND((created_at >= $from) AND(created_at <= $to))\n    AND created_hour >= toStartOfHour(toDateTime($from))\n    AND created_hour <= toStartOfHour(toDateTime($to))\n    AND hostname = '$hostname'\n    AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n        AND((created_at >= $from) AND(created_at <= $to))\n        AND created_hour >= toStartOfHour(toDateTime($from))\n        AND created_hour <= toStartOfHour(toDateTime($to))\n        AND('$query' = '-' OR '$query' = '' OR positionCaseInsensitive(query, '$query') > 0)\n        AND hostname = '$hostname'\n        AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum($column) DESC\n    LIMIT $limit)\nGROUP BY t, q\nORDER BY t ASC\n",
+          "intervalFactor": 1,
+          "query": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg(shared_blks_hit / (shared_blks_hit + shared_blks_read)) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n    AND((created_at >= $from) AND(created_at <= $to))\n    AND created_hour >= toStartOfHour(toDateTime($from))\n    AND created_hour <= toStartOfHour(toDateTime($to))\n    AND hostname = '$hostname'\n    AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n        AND((created_at >= $from) AND(created_at <= $to))\n        AND created_hour >= toStartOfHour(toDateTime($from))\n        AND created_hour <= toStartOfHour(toDateTime($to))\n        AND('$query' = '-' OR '$query' = '' OR positionCaseInsensitive(query, '$query') > 0)\n        AND hostname = '$hostname'\n        AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum($column) DESC\n    LIMIT $limit)\nGROUP BY t, q\nORDER BY t ASC\n",
+          "rawQuery": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg(shared_blks_hit / (shared_blks_hit + shared_blks_read)) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate(1648020731)) AND(created_date <= toDate(1648024331)))\n    AND((created_at >= 1648020731) AND(created_at <= 1648024331))\n    AND created_hour >= toStartOfHour(toDateTime(1648020731))\n    AND created_hour <= toStartOfHour(toDateTime(1648024331))\n    AND hostname = 'undefined'\n    AND ('yes' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate(1648020731)) AND(created_date <= toDate(1648024331)))\n        AND((created_at >= 1648020731) AND(created_at <= 1648024331))\n        AND created_hour >= toStartOfHour(toDateTime(1648020731))\n        AND created_hour <= toStartOfHour(toDateTime(1648024331))\n        AND('' = '-' OR '' = '' OR positionCaseInsensitive(query, '') > 0)\n        AND hostname = 'undefined'\n        AND ('yes' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum(total_time) DESC\n    LIMIT 5)\nGROUP BY t, q\nORDER BY t ASC",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": null
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "cache hit ratio",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transparent": true,
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "percentunit",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "percentunit",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "description": "https://www.postgresql.org/docs/10/pgstatstatements.html\nTotal time spent in the statement, in milliseconds\nper 30 seconds\nTotal number of shared blocks read by the statement * 8192 (block size)",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 5,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
+      "height": "200px",
+      "hiddenSeries": false,
+      "id": 9,
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": false,
+        "hideEmpty": true,
+        "hideZero": true,
+        "max": true,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": null,
+        "sort": "max",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null as zero",
+      "percentage": false,
+      "pluginVersion": "7.1.5",
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "database": null,
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg(shared_blks_read * 8192) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n    AND((created_at >= $from) AND(created_at <= $to))\n    AND created_hour >= toStartOfHour(toDateTime($from))\n    AND created_hour <= toStartOfHour(toDateTime($to))\n    AND hostname = '$hostname'\n    AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n        AND((created_at >= $from) AND(created_at <= $to))\n        AND created_hour >= toStartOfHour(toDateTime($from))\n        AND created_hour <= toStartOfHour(toDateTime($to))\n        AND('$query' = '-' OR '$query' = '' OR positionCaseInsensitive(query, '$query') > 0)\n        AND hostname = '$hostname'\n        AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum($column) DESC\n    LIMIT $limit)\nGROUP BY t, q\nORDER BY t ASC\n",
+          "intervalFactor": 1,
+          "query": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg(shared_blks_read * 8192) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n    AND((created_at >= $from) AND(created_at <= $to))\n    AND created_hour >= toStartOfHour(toDateTime($from))\n    AND created_hour <= toStartOfHour(toDateTime($to))\n    AND hostname = '$hostname'\n    AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n        AND((created_at >= $from) AND(created_at <= $to))\n        AND created_hour >= toStartOfHour(toDateTime($from))\n        AND created_hour <= toStartOfHour(toDateTime($to))\n        AND('$query' = '-' OR '$query' = '' OR positionCaseInsensitive(query, '$query') > 0)\n        AND hostname = '$hostname'\n        AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum($column) DESC\n    LIMIT $limit)\nGROUP BY t, q\nORDER BY t ASC\n",
+          "rawQuery": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg(shared_blks_read * 8192) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate(1648020738)) AND(created_date <= toDate(1648024338)))\n    AND((created_at >= 1648020738) AND(created_at <= 1648024338))\n    AND created_hour >= toStartOfHour(toDateTime(1648020738))\n    AND created_hour <= toStartOfHour(toDateTime(1648024338))\n    AND hostname = 'undefined'\n    AND ('yes' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate(1648020738)) AND(created_date <= toDate(1648024338)))\n        AND((created_at >= 1648020738) AND(created_at <= 1648024338))\n        AND created_hour >= toStartOfHour(toDateTime(1648020738))\n        AND created_hour <= toStartOfHour(toDateTime(1648024338))\n        AND('' = '-' OR '' = '' OR positionCaseInsensitive(query, '') > 0)\n        AND hostname = 'undefined'\n        AND ('yes' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum(total_time) DESC\n    LIMIT 5)\nGROUP BY t, q\nORDER BY t ASC",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": null
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "shared_blks_read",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transparent": true,
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "bytes",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "bytes",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "description": "https://www.postgresql.org/docs/10/pgstatstatements.html\nTotal time spent in the statement, in milliseconds\nper 30 seconds\nTotal number of temp blocks read and written by the statement * 8192 (block size)",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 4,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
+      "height": "200px",
+      "hiddenSeries": false,
+      "id": 10,
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": false,
+        "hideEmpty": false,
+        "hideZero": false,
+        "max": true,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": null,
+        "sort": "max",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null as zero",
+      "percentage": false,
+      "pluginVersion": "7.1.5",
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "database": null,
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg((temp_blks_read + temp_blks_written) * 8192) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n    AND((created_at >= $from) AND(created_at <= $to))\n    AND created_hour >= toStartOfHour(toDateTime($from))\n    AND created_hour <= toStartOfHour(toDateTime($to))\n    AND hostname = '$hostname'\n    AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n        AND((created_at >= $from) AND(created_at <= $to))\n        AND created_hour >= toStartOfHour(toDateTime($from))\n        AND created_hour <= toStartOfHour(toDateTime($to))\n        AND('$query' = '-' OR '$query' = '' OR positionCaseInsensitive(query, '$query') > 0)\n        AND hostname = '$hostname'\n        AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum($column) DESC\n    LIMIT $limit)\nGROUP BY t, q\nORDER BY t ASC\n",
+          "intervalFactor": 1,
+          "query": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg((temp_blks_read + temp_blks_written) * 8192) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n    AND((created_at >= $from) AND(created_at <= $to))\n    AND created_hour >= toStartOfHour(toDateTime($from))\n    AND created_hour <= toStartOfHour(toDateTime($to))\n    AND hostname = '$hostname'\n    AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n        AND((created_at >= $from) AND(created_at <= $to))\n        AND created_hour >= toStartOfHour(toDateTime($from))\n        AND created_hour <= toStartOfHour(toDateTime($to))\n        AND('$query' = '-' OR '$query' = '' OR positionCaseInsensitive(query, '$query') > 0)\n        AND hostname = '$hostname'\n        AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum($column) DESC\n    LIMIT $limit)\nGROUP BY t, q\nORDER BY t ASC\n",
+          "rawQuery": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg((temp_blks_read + temp_blks_written) * 8192) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate(1648020744)) AND(created_date <= toDate(1648024344)))\n    AND((created_at >= 1648020744) AND(created_at <= 1648024344))\n    AND created_hour >= toStartOfHour(toDateTime(1648020744))\n    AND created_hour <= toStartOfHour(toDateTime(1648024344))\n    AND hostname = 'undefined'\n    AND ('yes' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate(1648020744)) AND(created_date <= toDate(1648024344)))\n        AND((created_at >= 1648020744) AND(created_at <= 1648024344))\n        AND created_hour >= toStartOfHour(toDateTime(1648020744))\n        AND created_hour <= toStartOfHour(toDateTime(1648024344))\n        AND('' = '-' OR '' = '' OR positionCaseInsensitive(query, '') > 0)\n        AND hostname = 'undefined'\n        AND ('yes' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum(total_time) DESC\n    LIMIT 5)\nGROUP BY t, q\nORDER BY t ASC",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": null
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "temp files read and written",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transparent": true,
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "bytes",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "bytes",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "description": "https://www.postgresql.org/docs/10/pgstatstatements.html\nTotal time spent in the statement, in milliseconds\nper 30 seconds\nTotal time the statement spent writing/reading blocks, in milliseconds (if track_io_timing is enabled, otherwise zero)",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 4,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "height": "200px",
+      "hiddenSeries": false,
+      "id": 11,
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": false,
+        "hideEmpty": false,
+        "hideZero": false,
+        "max": true,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": null,
+        "sort": "max",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": false,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null as zero",
+      "percentage": false,
+      "pluginVersion": "7.1.5",
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "database": null,
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg(blk_read_time + blk_write_time) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n    AND((created_at >= $from) AND(created_at <= $to))\n    AND created_hour >= toStartOfHour(toDateTime($from))\n    AND created_hour <= toStartOfHour(toDateTime($to))\n    AND hostname = '$hostname'\n    AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n        AND((created_at >= $from) AND(created_at <= $to))\n        AND created_hour >= toStartOfHour(toDateTime($from))\n        AND created_hour <= toStartOfHour(toDateTime($to))\n        AND('$query' = '-' OR '$query' = '' OR positionCaseInsensitive(query, '$query') > 0)\n        AND hostname = '$hostname'\n        AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum($column) DESC\n    LIMIT $limit)\nGROUP BY t, q\nORDER BY t ASC\n",
+          "intervalFactor": 1,
+          "query": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg(blk_read_time + blk_write_time) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n    AND((created_at >= $from) AND(created_at <= $to))\n    AND created_hour >= toStartOfHour(toDateTime($from))\n    AND created_hour <= toStartOfHour(toDateTime($to))\n    AND hostname = '$hostname'\n    AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n        AND((created_at >= $from) AND(created_at <= $to))\n        AND created_hour >= toStartOfHour(toDateTime($from))\n        AND created_hour <= toStartOfHour(toDateTime($to))\n        AND('$query' = '-' OR '$query' = '' OR positionCaseInsensitive(query, '$query') > 0)\n        AND hostname = '$hostname'\n        AND ('$hide_superuser' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum($column) DESC\n    LIMIT $limit)\nGROUP BY t, q\nORDER BY t ASC\n",
+          "rawQuery": "SELECT\n    created_at * 1000 AS t,\n    concat(username, '::', datname, '::', substring(query, 1, 500)) AS q,\n    avg(blk_read_time + blk_write_time) as value\nFROM pg.pg_stat_statements\nWHERE\n    ((created_date >= toDate(1648020748)) AND(created_date <= toDate(1648024348)))\n    AND((created_at >= 1648020748) AND(created_at <= 1648024348))\n    AND created_hour >= toStartOfHour(toDateTime(1648020748))\n    AND created_hour <= toStartOfHour(toDateTime(1648024348))\n    AND hostname = 'undefined'\n    AND ('yes' = 'no' OR username NOT IN ('postgres','monitor'))\n    AND q IN (\n    SELECT\n      concat(username, '::', datname, '::', substring(query, 1, 500))\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_date >= toDate(1648020748)) AND(created_date <= toDate(1648024348)))\n        AND((created_at >= 1648020748) AND(created_at <= 1648024348))\n        AND created_hour >= toStartOfHour(toDateTime(1648020748))\n        AND created_hour <= toStartOfHour(toDateTime(1648024348))\n        AND('' = '-' OR '' = '' OR positionCaseInsensitive(query, '') > 0)\n        AND hostname = 'undefined'\n        AND ('yes' = 'no' OR username NOT IN ('postgres','monitor'))\n    GROUP BY\n        username,\n        datname,\n        query\n    ORDER BY sum(total_time) DESC\n    LIMIT 5)\nGROUP BY t, q\nORDER BY t ASC",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": null
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "IO time",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transparent": true,
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "ms",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "ms",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 26,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "clickhouse",
+          "value": "clickhouse"
+        },
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "ds",
+        "options": [],
+        "query": "vertamedia-clickhouse-datasource",
+        "refresh": 1,
+        "regex": "clickhouse",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": false,
+          "text": "postgres",
+          "value": "postgres"
+        },
+        "datasource": "$ds",
+        "definition": "select datname from pg.pg_stat_statements where created_hour >=  toStartOfHour(now()-interval 1 hour) group by datname order by datname",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Database",
+        "multi": false,
+        "name": "datname",
+        "options": [],
+        "query": "select datname from pg.pg_stat_statements where created_hour >=  toStartOfHour(now()-interval 1 hour) group by datname order by datname",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": false,
+          "text": "notebook",
+          "value": "notebook"
+        },
+        "datasource": "$ds",
+        "definition": "select hostname from pg.pg_stat_statements where datname IN ('$datname') and created_hour >=  toStartOfHour(now()-interval 1 hour) group by hostname order by hostname",
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "hostname",
+        "options": [],
+        "query": "select hostname from pg.pg_stat_statements where datname IN ('$datname') and created_hour >=  toStartOfHour(now()-interval 1 hour) group by hostname order by hostname",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "text": "total_time",
+          "value": "total_time"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "sort_by",
+        "multi": false,
+        "name": "column",
+        "options": [
+          {
+            "text": "calls",
+            "value": "calls"
+          },
+          {
+            "text": "total_time",
+            "value": "total_time"
+          },
+          {
+            "text": "rows",
+            "value": "rows"
+          },
+          {
+            "text": "shared_blks_hit",
+            "value": "shared_blks_hit"
+          },
+          {
+            "text": "shared_blks_read",
+            "value": "shared_blks_read"
+          },
+          {
+            "text": "shared_blks_dirtied",
+            "value": "shared_blks_dirtied"
+          },
+          {
+            "text": "shared_blks_written",
+            "value": "shared_blks_written"
+          },
+          {
+            "text": "blk_read_time",
+            "value": "blk_read_time"
+          },
+          {
+            "text": "blk_write_time",
+            "value": "blk_write_time"
+          },
+          {
+            "text": "total_time/calls",
+            "value": "total_time/calls"
+          }
+        ],
+        "query": "calls,total_time,rows,shared_blks_hit,shared_blks_read,shared_blks_dirtied,shared_blks_written,blk_read_time,blk_write_time,total_time/calls",
+        "refresh": 0,
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "allValue": null,
+        "current": {
+          "text": "5",
+          "value": "5"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "",
+        "multi": false,
+        "name": "limit",
+        "options": [
+          {
+            "text": "3",
+            "value": "3"
+          },
+          {
+            "text": "5",
+            "value": "5"
+          },
+          {
+            "text": "10",
+            "value": "10"
+          },
+          {
+            "text": "15",
+            "value": "15"
+          }
+        ],
+        "query": "3,5,10,15",
+        "refresh": 0,
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": true,
+          "text": "no",
+          "value": "no"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Hide superuser",
+        "multi": false,
+        "name": "hide_superuser",
+        "options": [
+          {
+            "selected": true,
+            "text": "no",
+            "value": "no"
+          },
+          {
+            "selected": false,
+            "text": "yes",
+            "value": "yes"
+          }
+        ],
+        "query": "no,yes",
+        "queryValue": "",
+        "refresh": 0,
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "",
+          "value": ""
+        },
+        "hide": 0,
+        "label": "Query Filter",
+        "name": "query",
+        "options": [],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ],
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
+  },
+  "timezone": "browser",
+  "title": "pg_top_queries",
+  "uid": "TzHfPjPnz",
+  "version": 2
+}

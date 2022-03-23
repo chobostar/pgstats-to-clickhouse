@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"gitlab.ozon.ru/infrastructure/ebuilds/pgstats-to-clickhouse/internal"
+	"github.com/chobostar/pgstats-to-clickhouse/internal"
 	"log"
 	"os"
 	"os/signal"

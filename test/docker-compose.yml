@@ -13,3 +13,16 @@ services:
       POSTGRES_DB: "postgres"
       POSTGRES_HOST_AUTH_METHOD: "trust"
     command: postgres -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all -c max_connections=200
+  grafana:
+    image: grafana/grafana:7.1.5-ubuntu
+    ports:
+     - "3000:3000"
+    volumes:
+      - ../grafana/provisioning:/etc/grafana/provisioning/datasources
+      - ../grafana/dashboards/provisioning:/etc/grafana/provisioning/dashboards
+      - ../grafana/dashboards/files:/var/lib/grafana/dashboards
+    environment:
+      GF_INSTALL_PLUGINS: "grafana-piechart-panel,vertamedia-clickhouse-datasource"
+      GF_SECURITY_ADMIN_USER: "admin"
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"

@@ -1,0 +1,135 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "$$hashKey": "object:49",
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "panels": [
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "clickhouse",
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "hiddenSeries": false,
+      "id": 2,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "dateTimeType": "DATETIME",
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n    t,\n    groupArray((query, rate)) AS groupArr\nFROM\n(\n    SELECT\n        t,\n        query,\n        if(runningDifference(c) <= 0, nan, runningDifference(c) / runningDifference(t / 1000)) AS rate\n    FROM\n(\n        SELECT\n            (intDiv(toUInt32(created_at), $interval) * $interval) * 1000 AS t,\n            query,\n            max(calls) AS c\n        FROM pg.pg_stat_statements\n        WHERE\n            ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n            AND((created_at >= toDateTime($from)) AND(created_at <= toDateTime($to)))\n            AND query IN (\n    SELECT query\n    FROM pg.pg_stat_statements\n    WHERE\n        ((created_at >= toDateTime($from)) AND(created_at <= toDateTime($to)))\n        AND created_date >= toDate($from)\n        AND created_date <= toDate($to)\n    GROUP BY query\n    ORDER BY sum(total_time) DESC\n    LIMIT 15)\n        GROUP BY\n            t,\n            query\n        ORDER BY\n            query ASC,\n            t ASC\n)\n    WHERE rate >= 0\n)\nGROUP BY t\nORDER BY t ASC",
+          "rawQuery": "SELECT     t,     groupArray((query, rate)) AS groupArr FROM (     SELECT         t,         query,         if(runningDifference(c) <= 0, nan, runningDifference(c) / runningDifference(t / 1000)) AS rate     FROM (         SELECT             (intDiv(toUInt32(created_at), 10) * 10) * 1000 AS t,             query,             max(calls) AS c         FROM pg.pg_stat_statements         WHERE             ((created_date >= toDate(1586311993)) AND(created_date <= toDate(1586333595)))             AND((created_at >= toDateTime(1586311993)) AND(created_at <= toDateTime(1586333595)))             AND query IN (     SELECT query     FROM pg.pg_stat_statements     WHERE         ((created_at >= toDateTime(1586311993)) AND(created_at <= toDateTime(1586333595)))         AND created_date >= toDate(1586311993)         AND created_date <= toDate(1586333595)     GROUP BY query     ORDER BY sum(total_time) DESC     LIMIT 15)         GROUP BY             t,             query         ORDER BY             query ASC,             t ASC )     WHERE rate >= 0 ) GROUP BY t ORDER BY t ASC",
+          "refId": "A",
+          "round": "0s"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "pg_stat_stamenents",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:148",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:149",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    }
+  ],
+  "schemaVersion": 22,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "pg_stat_statements",
+  "uid": "s6BrnTjZz",
+  "variables": {
+    "list": []
+  },
+  "version": 2
+}

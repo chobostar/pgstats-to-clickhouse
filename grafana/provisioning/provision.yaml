@@ -1,0 +1,14 @@
+apiVersion: 1
+
+datasources:
+ - name: clickhouse
+   type: vertamedia-clickhouse-datasource
+   access: proxy
+   orgId: 1
+   url: http://clickhouse:8123?max_query_size=268435456&max_ast_elements=1000000&max_execution_time=10
+   basicAuth: false
+   isDefault: true
+   jsonData:
+     addCorsHeader: true
+     tlsSkipVerify: true
+   editable: true

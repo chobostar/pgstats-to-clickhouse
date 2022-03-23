@@ -17,6 +17,29 @@ Features:
 
 ![pg_stat_tables](examples/img/62add3afdb.png)
 
+Quick demo:
+```
+make up
+make build
+
+env INTERVAL="30s" \
+     POSTGRES_DSN="postgres://postgres@localhost:5432/postgres?sslmode=disable" \
+     CLICKHOUSE_DSN="http://localhost:8123/default" \
+     STATIO_POSTGRES_DSN="postgres://postgres@localhost:5432/postgres?sslmode=disable" \
+     ./bin/pgstats-to-clickhouse
+
+docker-compose -f ./test/docker-compose.yml exec -T postgres psql -U postgres -c "drop table pg_stat_statements"
+docker-compose -f ./test/docker-compose.yml exec -T postgres psql -U postgres -c "create extension pg_stat_statements"
+docker-compose -f ./test/docker-compose.yml exec -T postgres pgbench -U postgres -i
+
+docker-compose -f ./test/docker-compose.yml exec -T postgres pgbench -U postgres
+...
+# wait 30 sec
+...
+docker-compose -f ./test/docker-compose.yml exec -T postgres pgbench -U postgres
+```
+open: http://localhost:3000/d/TzHfPjPnz/pg_top_queries
+
 #### Requirements
 
 tested on
@@ -57,3 +80,7 @@ $ make test-full
 - hangs on during network calls if packets are dropped. Can't be interrapted by SIGINT (solved by connect_timeout)
 - data loss if clickhouse is not accessable
 - can open up to 3 connection in a once, if 3 collectors are used
+
+#### Caveat
+- pg_stat_stamenents file on disk can be too huge and it causes disk swap during reading pg_stat_statements' view. Use small value `pg_stat_statements.max`
+- in case of 1000+ amount of schemas and tables `pgstats-to-clickhouse` daemon may use too much memory, because it holds previous metrics' snapshot. 1 table == 1 entry.
